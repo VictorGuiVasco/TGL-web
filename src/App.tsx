@@ -1,10 +1,16 @@
 import React from 'react'
+import Routes from './routes'
+import { Provider } from 'react-redux'
+
+import store from './store'
+
+import './assets/styles/global.css'
 
 function App() {
   return (
-    <div className="App">
-      <h1>Hello World</h1>
-    </div>
+    <Provider store={store} >
+      <Routes />
+    </Provider>
   )
 }
 
