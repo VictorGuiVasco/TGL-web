@@ -17,6 +17,9 @@ body, input, textarea, button {
 }
 
 button {
+  background: transparent;
+  border-width: 0;
+  
   cursor: pointer;
 }
 
