@@ -20,7 +20,12 @@ const BetCard: React.FC<BetCardProps> = ({
   return (
     <Card>
       <Bar style={{ background: color }} />
-      <Text>{numbers}</Text>
+      {!!date ? (
+        <Text>{numbers}</Text>
+      ) : (
+        <Text style={{ fontSize: 15 }}>{numbers}</Text>
+      )}
+
       {!!date && (
         <span>
           {date} - ({price})
@@ -30,8 +35,8 @@ const BetCard: React.FC<BetCardProps> = ({
       {!!date ? (
         <Text>{type}</Text>
       ) : (
-        <Text>
-          {type} <p>{price}</p>
+        <Text style={{ fontSize: 15 }}>
+          {type} <p style={{ fontSize: 15 }}>{price}</p>
         </Text>
       )}
     </Card>

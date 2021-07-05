@@ -1,17 +1,42 @@
 import styled from 'styled-components'
-import { SubmitButton } from '../../assets/styles/global'
+import { Link } from 'react-router-dom'
 
 export const Main = styled.main`
   margin-top: 4.6875rem;
   padding: 0 12.5rem 0 8.125rem;
-
   flex: 1;
+
+  @media (max-width: 800px) {
+    padding: 0 5rem;
+  }
 `
 
 export const ButtonsContainer = styled.div`
   display: flex;
   flex-direction: row;
   align-items: center;
+  position: relative;
+
+  @media (max-width: 800px) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`
+
+export const FilterContainer = styled(ButtonsContainer)`
+  @media (max-width: 800px) {
+    display: flex;
+    align-items: center;
+    flex-direction: row;
+    margin: 1rem 0;
+  }
+
+  @media (max-width: 450px) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
 `
 
 export const Text = styled.p`
@@ -26,10 +51,27 @@ export const Title = styled.h3`
   margin-right: 2.8125rem;
 `
 
-export const Button = styled(SubmitButton)`
+export const Button = styled(Link)`
+  width: fit-content;
   margin: 0;
   margin-left: auto;
-  font-size: 1.5rem;
+
+  background: transparent;
+  border: 0;
+  font: italic 700 1.5rem sans-serif;
+  color: #b5c401;
+  text-align: center;
+
+  @media (max-width: 800px) {
+    position: absolute;
+    top: 0;
+    right: 0;
+  }
+
+  @media (max-width: 450px) {
+    position: relative;
+    margin: 0;
+  }
 `
 
 export const BetContainer = styled.div`

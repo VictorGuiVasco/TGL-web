@@ -6,12 +6,12 @@ const Header: React.FC = () => {
   return (
     <Container>
       <div>
-        <ButtonTGL to='/app' >TGL</ButtonTGL>
+        <ButtonTGL to='/' >TGL</ButtonTGL>
       </div>
 
       <nav>
         <Button to='/app' >Account</Button>
-        <Button to='/app' >Log Out     &rarr;</Button>
+        <Button to='/' >Log Out     &rarr;</Button>
       </nav>
     </Container>
   )

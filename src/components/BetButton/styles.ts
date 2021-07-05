@@ -13,4 +13,8 @@ export const Button = styled.button`
   font: italic 700 0.875rem sans-serif;
 
   transition: filter 0.02;
+
+  @media (max-width: 450px) {
+    margin-top: 1rem;
+  }
 `

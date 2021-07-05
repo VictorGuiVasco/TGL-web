@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react'
-/* import { useDispatch } from 'react-redux'
-import { fetchBets } from '../../store/actions/betActions' */
+import React from 'react'
 
 import Header from '../../components/Header'
 import BetButton from '../../components/BetButton'
@@ -10,6 +8,7 @@ import {
   BetContainer,
   ButtonsContainer,
   Button,
+  FilterContainer,
   Main,
   Text,
   Title,
@@ -17,9 +16,6 @@ import {
 import { Container, Footer } from '../../assets/styles/global'
 
 const HomePage: React.FC = () => {
-  // const dispatch = useDispatch()
-  const [data, setData] = useState('')
-
   const DUMMY_BETS = {
     types: [
       {
@@ -72,10 +68,6 @@ const HomePage: React.FC = () => {
     },
   ]
 
-  /* useEffect(() => {
-    dispatch(fetchBets())
-  }, [dispatch]) */
-
   return (
     <Container>
       <Header />
@@ -83,20 +75,21 @@ const HomePage: React.FC = () => {
       <Main>
         <ButtonsContainer>
           <Title>RECENT GAMES</Title>
-          <ButtonsContainer>
+          <FilterContainer>
             <Text>Filters</Text>
 
             {DUMMY_BETS.types.map((elem) => (
               <BetButton key={elem.type} type={elem.type} color={elem.color} />
             ))}
-          </ButtonsContainer>
+          </FilterContainer>
 
-          <Button>New Bet &rarr;</Button>
+          <Button to="/new-bet">New Bet &rarr;</Button>
         </ButtonsContainer>
 
         <BetContainer>
           {DUMMY_DATA.map((elem) => (
             <BetCard
+              key={elem.type}
               type={elem.type}
               numbers={elem.numbers}
               date={elem.date}

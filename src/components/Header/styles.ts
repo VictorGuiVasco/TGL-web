@@ -21,7 +21,10 @@ export const Container = styled.header`
     display: flex;
     align-items: center;
     justify-content: center;
+  }
 
+  @media (max-width: 800px) {
+    padding: 0 6rem;
   }
 `
 
