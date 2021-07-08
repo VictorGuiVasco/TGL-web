@@ -1,4 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
+
+import { RootState } from '../../store'
 
 import Header from '../../components/Header'
 import BetButton from '../../components/BetButton'
@@ -18,6 +21,7 @@ import {
   CartContainer,
   Main,
   NumberButton,
+  PriceContainer,
   RulesContainer,
   SaveButton,
   Scroll,
@@ -28,72 +32,97 @@ import {
 } from './styles'
 import { Container } from '../../assets/styles/global'
 
+interface CartProps {
+  type: string
+  numbers: string
+  date?: string
+  price: string
+  color: string
+}
+
 const NewBet: React.FC = () => {
-  const data = {
-    type: 'Lotofácil',
-    description:
-      'Escolha 15 números para apostar na lotofácil. Você ganha acertando 11, 12, 13, 14 ou 15 números. São muitas chances de ganhar, e agora você joga de onde estiver!',
-    range: 25,
-    price: 2.5,
-    'max-number': 15,
-    color: '#7F3992',
-    'min-cart-value': 30,
+  const bets = useSelector((state: RootState) => state.bets)[0]
+
+  const [indexGame, setIndexGame] = useState(0)
+  const [cartData, setCartData] = useState<Array<CartProps>>([])
+  let data = cartData
+
+  const selectedGame = bets?.types[indexGame]
+
+  let numberSelected: number[] = []
+
+  function getRandomIntInclusive(max: number) {
+    var num = Math.ceil(Math.random() * max)
+    while (numberSelected.indexOf(num) >= 0) {
+      num = Math.ceil(Math.random() * max)
+    }
+    return num
   }
 
-  const DUMMY_BETS = {
-    types: [
-      {
-        type: 'Lotofácil',
-        description:
-          'Escolha 15 números para apostar na lotofácil. Você ganha acertando 11, 12, 13, 14 ou 15 números. São muitas chances de ganhar, e agora você joga de onde estiver!',
-        range: 25,
-        price: 2.5,
-        'max-number': 15,
-        color: '#7F3992',
-        'min-cart-value': 30,
-      },
-      {
-        type: 'Mega-Sena',
-        description:
-          'Escolha 6 números dos 60 disponíveis na mega-sena. Ganhe com 6, 5 ou 4 acertos. São realizados dois sorteios semanais para você apostar e torcer para ficar milionário.',
-        range: 60,
-        price: 4.5,
-        'max-number': 6,
-        color: '#01AC66',
-        'min-cart-value': 30,
-      },
-      {
-        type: 'Quina',
-        description:
-          'Escolha 5 números dos 80 disponíveis na quina. 5, 4, 3 ou 2 acertos. São seis sorteios semanais e seis chances de ganhar.',
-        range: 80,
-        price: 2,
-        'max-number': 5,
-        color: '#F79C31',
-        'min-cart-value': 30,
-      },
-    ],
+  function changeIndexBet(index: number) {
+    setIndexGame(index)
   }
 
-  const DUMMY_DATA = [
-    {
-      type: 'Lotofácio',
-      numbers: '01, 02, 04, 05, 06, 07, 09, 15, 17, 20, 21, 22, 23, 24, 25',
-      date: '30/11/2020',
-      price: 'R$ 2,50',
-      color: '#7F3992',
-    },
-    {
-      type: 'Mega-Sena',
-      numbers: '01, 02, 04, 05, 06',
-      date: '29/10/2020',
-      price: 'R$ 4,00',
-      color: '#01AC66',
-    },
-  ]
+  function addNumber(num: number) {
+    if (numberSelected.some((elem) => elem === num)) {
+      console.log('ja tem')
+    } else if (numberSelected.length === selectedGame['max-number']) {
+      console.log('cheio')
+    } else {
+      numberSelected.push(num)
+    }
+    console.log(numberSelected)
+  }
+
+  function completeGame() {
+    var numOfEmptySpaces = selectedGame['max-number'] - numberSelected.length
+    if (numOfEmptySpaces === 0) {
+      numberSelected = []
+      numOfEmptySpaces = selectedGame['max-number']
+    }
+    for (var i = 0; i < numOfEmptySpaces; i++) {
+      numberSelected.push(getRandomIntInclusive(selectedGame?.range))
+    }
+
+    console.log(numberSelected)
+  }
+
+  function clearGame() {
+    numberSelected = []
+  }
+
+  function addToCart() {
+    if (numberSelected.length !== selectedGame['max-number']) {
+      console.log('encha o cart')
+      return
+    }
+
+    numberSelected.sort((num1, num2) => {
+      if (num1 > num2) return 1
+      if (num1 < num2) return -1
+      return 0
+    })
+
+    const price = selectedGame.price.toLocaleString('pt-br', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+
+    let temporaryData = cartData
+
+    temporaryData.push({
+      type: selectedGame?.type,
+      numbers: numberSelected.join(', '),
+      date: '07/07/2021',
+      price,
+      color: selectedGame.color,
+    })
+
+    setCartData(temporaryData)
+  }
 
   let range = []
-  for (let i = 1; i <= data.range; i++) {
+  for (let i = 1; i <= selectedGame?.range; i++) {
     range.push(i)
   }
 
@@ -104,31 +133,59 @@ const NewBet: React.FC = () => {
         <section>
           <TitleContainer>
             <Text>NEW BET</Text>
-            <BetNameText>FOR {data.type}</BetNameText>
+            <BetNameText>FOR {selectedGame.type}</BetNameText>
           </TitleContainer>
 
           <BetOptions>
             <p>Choose a game</p>
-            {DUMMY_BETS.types.map((elem) => (
-              <BetButton key={elem.type} type={elem.type} color={elem.color} />
-            ))}
+            {bets &&
+              selectedGame &&
+              bets?.types.map((elem, index) => (
+                <BetButton
+                  key={index}
+                  backgroundColor={
+                    elem.type === selectedGame.type ? elem.color : '#FFF'
+                  }
+                  fontColor={
+                    !(elem.type === selectedGame.type) ? elem.color : '#FFF'
+                  }
+                  borderColor={elem.color}
+                  onClick={() => {
+                    changeIndexBet(index)
+                  }}
+                >
+                  {elem.type}
+                </BetButton>
+              ))}
           </BetOptions>
 
           <RulesContainer>
             <h1>Fill your bet</h1>
-            <p>{data.description}</p>
+            <p>{selectedGame.description}</p>
           </RulesContainer>
 
           <Card>
             {range.map((elem) => (
-              <NumberButton key={elem}>{elem}</NumberButton>
+              <NumberButton
+                color={
+                  numberSelected.some((num) => num === elem)
+                    ? selectedGame.color
+                    : ''
+                }
+                onClick={() => {
+                  addNumber(elem)
+                }}
+                key={elem}
+              >
+                {elem}
+              </NumberButton>
             ))}
           </Card>
 
           <ButtonContainer>
-            <Button>Complete Game</Button>
-            <Button>Clear Game</Button>
-            <CartButton>
+            <Button onClick={completeGame}>Complete Game</Button>
+            <Button onClick={clearGame}>Clear Game</Button>
+            <CartButton onClick={addToCart}>
               <img src={cartIcon} alt="cart" />
               Add to cart
             </CartButton>
@@ -139,13 +196,12 @@ const NewBet: React.FC = () => {
             <h1>CART</h1>
 
             <Scroll>
-              {DUMMY_DATA.map((elem) => (
-                <BetContainer>
+              {data.map((elem) => (
+                <BetContainer key={elem.type}>
                   <TrashButton>
                     <img src={trashIcon} alt="deletar" />
                   </TrashButton>
                   <BetCard
-                    key={elem.type}
                     type={elem.type}
                     numbers={elem.numbers}
                     price={elem.price}
@@ -155,14 +211,14 @@ const NewBet: React.FC = () => {
               ))}
             </Scroll>
 
-            <h1>
-              CART{' '}
-              {!!DUMMY_DATA ? (
+            <PriceContainer>
+              <h1>CART </h1>
+              {!!cartData ? (
                 <TotalPrice>TOTAL: R$ 7,00</TotalPrice>
               ) : (
                 <TotalPrice>Vazio</TotalPrice>
               )}
-            </h1>
+            </PriceContainer>
 
             <SaveButton>Save &rarr;</SaveButton>
           </CartContainer>

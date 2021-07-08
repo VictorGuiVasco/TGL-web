@@ -1,5 +1,9 @@
 import styled from 'styled-components'
 
+interface StylesProps {
+  color?: string
+}
+
 export const Main = styled.main`
   margin-top: 4.6875rem;
   padding: 0 12.5rem 0 8.125rem;
@@ -50,6 +54,21 @@ export const BetOptions = styled.div`
     color: #868686;
     margin-bottom: 1.5rem;
   }
+
+  button {
+    padding: 0.625rem 1.875rem;
+    margin-right: 1.5625rem;
+
+    text-align: center;
+    font-size: 16px;
+
+    border: 2px solid;
+    border-radius: 100px;
+
+    font: italic 700 0.875rem sans-serif;
+
+    transition: filter 0.02;
+  }
 `
 
 export const RulesContainer = styled.div`
@@ -76,7 +95,7 @@ export const Card = styled.div`
   }
 `
 
-export const NumberButton = styled.button`
+export const NumberButton = styled.button<StylesProps>`
   width: 3.9375rem;
   height: 4.0625rem;
 
@@ -86,10 +105,14 @@ export const NumberButton = styled.button`
   font: 700 1.25rem sans-serif;
   color: #ffffff;
 
-  background: #adc0c4;
+  background: ${(props) => (!!props.color ? props.color: '#adc0c4')};
   border-radius: 100%;
 
   transition: filter 0.02;
+
+  &.activated {
+    background: red
+  }
 
   &:hover {
     filter: brightness(0.9);
@@ -161,12 +184,16 @@ export const CartContainer = styled.div`
     font: italic 700 1.5rem sans-serif;
     color: #707070;
     margin: 0 0 2.1875rem;
-    display: flex;
   }
+
   @media (max-width: 800px) {
     margin: 2rem 0;
     position: relative;
   }
+`
+
+export const PriceContainer = styled.div`
+  display: flex;
 `
 
 export const Scroll = styled.div`

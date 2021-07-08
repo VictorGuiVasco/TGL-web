@@ -25,7 +25,7 @@ export const Bar = styled.div`
   left: 0;
 `
 
-export const Text = styled.p`
+export const Text = styled.div`
   display: flex;
   font: italic 700 1.25rem sans-serif;
   color: #868686;

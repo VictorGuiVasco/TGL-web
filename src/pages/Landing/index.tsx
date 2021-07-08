@@ -1,11 +1,13 @@
 import React, { FormEvent, useState } from 'react'
-import { useSelector } from 'react-redux'
-/* import { useHistory } from 'react-router' */
+import { useDispatch, useSelector } from 'react-redux'
+import { useHistory } from 'react-router'
+
+import { RootState } from '../../store'
+import { authActions } from '../../store/slices/authSlice'
 
 import Card from '../../components/Card'
 import LandingTitles from '../../components/LandingTitles'
 
-import { RootState } from '../../store'
 import Swal from 'sweetalert2'
 
 import {
@@ -21,7 +23,8 @@ import {
 } from '../../assets/styles/global'
 
 const Landing: React.FC = () => {
-  /* const history = useHistory() */
+  const dispatch = useDispatch()
+  const history = useHistory()
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -37,12 +40,20 @@ const Landing: React.FC = () => {
 
     if (email.length === 0 || password.length === 0) {
       Swal.fire('Error', 'Preencha todos os campos', 'error')
-    } else if (existingUser) {
-      if (existingUser.password === password)
-        Swal.fire('Bem Vindo', 'Log In', 'success')
-      else Swal.fire('Error', 'Senha incorreta', 'error')
-    } else {
+    } else if (!existingUser) {
       Swal.fire('Error', 'Usuário não encontrado', 'error')
+    } else {
+      if (existingUser.password === password) {
+        dispatch(authActions.login(existingUser))
+        Swal.fire({
+          icon: 'success',
+          title: 'Seja bem-vindo',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          history.replace('/app')
+        })
+      } else Swal.fire('Error', 'Senha incorreta', 'error')
     }
   }
 

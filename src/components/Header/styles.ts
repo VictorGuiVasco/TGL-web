@@ -38,18 +38,26 @@ export const Button = styled(Link)`
   }
 `
 
-export const ButtonTGL = styled(Button)`
+export const ButtonTGL = styled(Link)`
   display: flex;
   align-items: center;
   justify-content: center;
 
-  font-size: 2.75rem;
+  margin-right: 4.625rem;
+
+  text-align: center;
+  font: italic 700 2.75rem sans-serif;
+  color: #707070;
   height: 4.6875rem;
   position:relative;
+
+  @media(max-width: 800px){
+    margin-right: 2.5rem;
+  }
   
   &::before {
     content: '';
-    width: 107px;
+    width: 6.6875rem;
     height: 0.4375rem;
     background-color: #b5c401;
     border-radius: 6px;
