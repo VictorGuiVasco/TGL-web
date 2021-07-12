@@ -25,6 +25,21 @@ export const ButtonsContainer = styled.div`
 `
 
 export const FilterContainer = styled(ButtonsContainer)`
+  button {
+    padding: 0.625rem 1.875rem;
+    margin-right: 1.5625rem;
+
+    text-align: center;
+    font-size: 16px;
+
+    border: 2px solid;
+    border-radius: 100px;
+
+    font: italic 700 0.875rem sans-serif;
+
+    transition: filter 0.02;
+  }
+
   @media (max-width: 800px) {
     display: flex;
     align-items: center;
@@ -78,4 +93,11 @@ export const BetContainer = styled.div`
   display: flex;
   flex-direction: column;
   margin-top: 2.1875rem;
+
+  p {
+    text-align: left;
+    font: italic 700 1.5rem sans-serif;
+    color: #707070;
+    margin: 0 0 2.1875rem;
+  }
 `

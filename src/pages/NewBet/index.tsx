@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 
 import { RootState } from '../../store'
+import { gamesActions } from '../../store/slices/gamesSlice'
 
 import Header from '../../components/Header'
 import BetButton from '../../components/BetButton'
@@ -9,6 +10,8 @@ import BetCard from '../../components/BetCard'
 
 import cartIcon from '../../assets/images/icons/shopping-cart.svg'
 import trashIcon from '../../assets/images/icons/trash.svg'
+
+import Swal from 'sweetalert2'
 
 import {
   BetContainer,
@@ -32,7 +35,7 @@ import {
 } from './styles'
 import { Container } from '../../assets/styles/global'
 
-interface CartProps {
+interface GamesProps {
   type: string
   numbers: string
   date?: string
@@ -41,19 +44,29 @@ interface CartProps {
 }
 
 const NewBet: React.FC = () => {
+  const dispatch = useDispatch()
   const bets = useSelector((state: RootState) => state.bets)[0]
 
   const [indexGame, setIndexGame] = useState(0)
-  const [cartData, setCartData] = useState<Array<CartProps>>([])
-  let data = cartData
+  const [numberSelected, setNumberSelected] = useState<number[]>([])
+  const [cartData, setCartData] = useState<Array<GamesProps>>([])
+  const [actualPrice, setActualPrice] = useState(0)
+  const [localePrice, setLocalePrice] = useState('')
 
   const selectedGame = bets?.types[indexGame]
 
-  let numberSelected: number[] = []
 
-  function getRandomIntInclusive(max: number) {
+  useEffect(() => {
+    const price = actualPrice.toLocaleString('pt-br', {
+      style: 'currency',
+      currency: 'BRL',
+    })
+    setLocalePrice(price)
+  }, [actualPrice])
+
+  function getRandomIntInclusive(max: number, arr: number[]) {
     var num = Math.ceil(Math.random() * max)
-    while (numberSelected.indexOf(num) >= 0) {
+    while (arr.indexOf(num) >= 0) {
       num = Math.ceil(Math.random() * max)
     }
     return num
@@ -61,39 +74,42 @@ const NewBet: React.FC = () => {
 
   function changeIndexBet(index: number) {
     setIndexGame(index)
+    setNumberSelected([])
   }
 
   function addNumber(num: number) {
     if (numberSelected.some((elem) => elem === num)) {
-      console.log('ja tem')
+      let temp = numberSelected.slice()
+      temp.splice(numberSelected.indexOf(num), 1)
+      setNumberSelected(temp)
     } else if (numberSelected.length === selectedGame['max-number']) {
-      console.log('cheio')
+      Swal.fire('Carrinho cheio')
     } else {
-      numberSelected.push(num)
+      setNumberSelected([...numberSelected, num])
     }
-    console.log(numberSelected)
   }
 
   function completeGame() {
-    var numOfEmptySpaces = selectedGame['max-number'] - numberSelected.length
+    let tempNumbers = numberSelected.slice()
+    var numOfEmptySpaces = selectedGame['max-number'] - tempNumbers.length
     if (numOfEmptySpaces === 0) {
-      numberSelected = []
+      console.log(numOfEmptySpaces)
+      tempNumbers = []
       numOfEmptySpaces = selectedGame['max-number']
     }
     for (var i = 0; i < numOfEmptySpaces; i++) {
-      numberSelected.push(getRandomIntInclusive(selectedGame?.range))
+      tempNumbers.push(getRandomIntInclusive(selectedGame?.range, tempNumbers))
     }
-
-    console.log(numberSelected)
+    setNumberSelected(tempNumbers)
   }
 
   function clearGame() {
-    numberSelected = []
+    setNumberSelected([])
   }
 
   function addToCart() {
     if (numberSelected.length !== selectedGame['max-number']) {
-      console.log('encha o cart')
+      Swal.fire('Preencha a cartela')
       return
     }
 
@@ -108,17 +124,41 @@ const NewBet: React.FC = () => {
       currency: 'BRL',
     })
 
-    let temporaryData = cartData
-
-    temporaryData.push({
+    let temporaryData = {
       type: selectedGame?.type,
       numbers: numberSelected.join(', '),
-      date: '07/07/2021',
       price,
       color: selectedGame.color,
-    })
+    }
+    setNumberSelected([])
+    setActualPrice(actualPrice + selectedGame.price)
+    setCartData([...cartData, temporaryData])
+  }
 
-    setCartData(temporaryData)
+  function deleteGame(index: number, type: string) {
+    let data = cartData.slice()
+    data.splice(index, 1)
+
+    let tempData = bets?.types.find((elem) => elem.type === type)
+
+    setActualPrice(actualPrice - (tempData?.price ? tempData?.price : 0))
+    setCartData(data)
+  }
+
+  function saveGame() {
+    if(actualPrice === 0){
+      Swal.fire('Preencha o cart')
+      return
+    }
+    else if (actualPrice < 30) {
+      Swal.fire('Compre no minimo R$ 30,00')
+      return
+    } else {
+      dispatch(gamesActions.addGames(cartData))
+      setCartData([])
+      setActualPrice(0)
+      Swal.fire('Parabéns pela compra')
+    }
   }
 
   let range = []
@@ -133,7 +173,7 @@ const NewBet: React.FC = () => {
         <section>
           <TitleContainer>
             <Text>NEW BET</Text>
-            <BetNameText>FOR {selectedGame.type}</BetNameText>
+            <BetNameText>FOR {selectedGame?.type}</BetNameText>
           </TitleContainer>
 
           <BetOptions>
@@ -161,7 +201,7 @@ const NewBet: React.FC = () => {
 
           <RulesContainer>
             <h1>Fill your bet</h1>
-            <p>{selectedGame.description}</p>
+            <p>{selectedGame?.description}</p>
           </RulesContainer>
 
           <Card>
@@ -196,9 +236,13 @@ const NewBet: React.FC = () => {
             <h1>CART</h1>
 
             <Scroll>
-              {data.map((elem) => (
-                <BetContainer key={elem.type}>
-                  <TrashButton>
+              {cartData.map((elem, index) => (
+                <BetContainer key={index}>
+                  <TrashButton
+                    onClick={() => {
+                      deleteGame(index, elem.type)
+                    }}
+                  >
                     <img src={trashIcon} alt="deletar" />
                   </TrashButton>
                   <BetCard
@@ -213,14 +257,14 @@ const NewBet: React.FC = () => {
 
             <PriceContainer>
               <h1>CART </h1>
-              {!!cartData ? (
-                <TotalPrice>TOTAL: R$ 7,00</TotalPrice>
+              {actualPrice !== 0 ? (
+                <TotalPrice>TOTAL: {localePrice}</TotalPrice>
               ) : (
-                <TotalPrice>Vazio</TotalPrice>
+                <TotalPrice>VAZIO</TotalPrice>
               )}
             </PriceContainer>
 
-            <SaveButton>Save &rarr;</SaveButton>
+            <SaveButton onClick={saveGame}>Save &rarr;</SaveButton>
           </CartContainer>
         </section>
       </Main>
