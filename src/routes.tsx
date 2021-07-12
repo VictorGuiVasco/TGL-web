@@ -9,6 +9,7 @@ import RegistrationPage from './pages/RegistrationPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import HomePage from './pages/HomePage'
 import NewBet from './pages/NewBet'
+import AccountPage from './pages/AccountPage'
 
 import RequireAuth from './components/RequireAuth'
 
@@ -25,6 +26,7 @@ const Routes: React.FC = () => {
       <RequireAuth>
         <Route path="/app" component={HomePage} />
         <Route path="/new-bet" component={NewBet} />
+        <Route path="/account" component={AccountPage} />
       </RequireAuth>
     </BrowserRouter>
   )

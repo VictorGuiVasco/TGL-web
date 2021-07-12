@@ -55,7 +55,6 @@ const NewBet: React.FC = () => {
 
   const selectedGame = bets?.types[indexGame]
 
-
   useEffect(() => {
     const price = actualPrice.toLocaleString('pt-br', {
       style: 'currency',
@@ -83,7 +82,7 @@ const NewBet: React.FC = () => {
       temp.splice(numberSelected.indexOf(num), 1)
       setNumberSelected(temp)
     } else if (numberSelected.length === selectedGame['max-number']) {
-      Swal.fire('Carrinho cheio')
+      Swal.fire('Cartela cheia')
     } else {
       setNumberSelected([...numberSelected, num])
     }
@@ -109,7 +108,14 @@ const NewBet: React.FC = () => {
 
   function addToCart() {
     if (numberSelected.length !== selectedGame['max-number']) {
-      Swal.fire('Preencha a cartela')
+      let tempNumbers = numberSelected.slice()
+      let numOfEmptySpaces = selectedGame['max-number'] - tempNumbers.length
+      let wordLeft = numOfEmptySpaces === 1 ? 'Falta' : 'Faltam'
+      let wordNumber = numOfEmptySpaces === 1 ? 'número' : 'números'
+      Swal.fire(
+        'Preencha a cartela',
+        `${wordLeft} ${numOfEmptySpaces} ${wordNumber}`,
+      )
       return
     }
 
@@ -146,11 +152,10 @@ const NewBet: React.FC = () => {
   }
 
   function saveGame() {
-    if(actualPrice === 0){
+    if (actualPrice === 0) {
       Swal.fire('Preencha o cart')
       return
-    }
-    else if (actualPrice < 30) {
+    } else if (actualPrice < 30) {
       Swal.fire('Compre no minimo R$ 30,00')
       return
     } else {
@@ -256,11 +261,9 @@ const NewBet: React.FC = () => {
             </Scroll>
 
             <PriceContainer>
-              <h1>CART </h1>
-              {actualPrice !== 0 ? (
+              {actualPrice !== 0 ? <h1>CART</h1> : <h1>ADICIONE ITENS</h1>}
+              {actualPrice !== 0 && (
                 <TotalPrice>TOTAL: {localePrice}</TotalPrice>
-              ) : (
-                <TotalPrice>VAZIO</TotalPrice>
               )}
             </PriceContainer>
 

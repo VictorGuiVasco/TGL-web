@@ -136,7 +136,7 @@ const HomePage: React.FC = () => {
               />
             ))
           ) : (
-            <p>VAZIO</p>
+            <p>Nenhum jogo registrado</p>
           )}
         </BetContainer>
       </Main>

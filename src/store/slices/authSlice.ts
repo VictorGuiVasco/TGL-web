@@ -12,8 +12,8 @@ interface AuthProps {
 }
 
 const initialState: AuthProps = { 
-  user: { name: '', email: '', password: '' }, 
-  isLoggedIn: false 
+  user: { name: 'Victor', email: 'teste@teste.com', password: '123456' }, 
+  isLoggedIn: true 
 }
 
 const authSlice = createSlice({

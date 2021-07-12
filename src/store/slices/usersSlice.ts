@@ -15,6 +15,16 @@ const usersSlice = createSlice({
     createNewUser(state, action: PayloadAction<UsersProps>) {
       state.push(action.payload)
     },
+    updateUser(state, action: PayloadAction<UsersProps>) {
+      for (var i in state) {
+        if (state[i].email === action.payload.email) {
+          state[i].name = action.payload.name
+          state[i].email = action.payload.email
+          state[i].password = action.payload.password
+          break
+        }
+      }
+    },
   },
 })
 
