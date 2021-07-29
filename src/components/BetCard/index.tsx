@@ -5,9 +5,9 @@ import { Bar, Card, Text } from './styles'
 interface BetCardProps {
   type: string
   numbers: string
-  date?: string
-  price: string
+  price: number
   color: string
+  date?: string
 }
 
 const BetCard: React.FC<BetCardProps> = ({
@@ -17,6 +17,17 @@ const BetCard: React.FC<BetCardProps> = ({
   price,
   color,
 }) => {
+  if (!!date) {
+    let bar = '/'
+    date = date?.slice(0, -10)
+    date = date?.replace(/-/g, bar)
+  }
+
+  const currency = price.toLocaleString('pt-br', {
+    style: 'currency',
+    currency: 'BRL',
+  })
+
   return (
     <Card>
       <Bar style={{ background: color }} />
@@ -28,7 +39,7 @@ const BetCard: React.FC<BetCardProps> = ({
 
       {!!date && (
         <span>
-          {date} - ({price})
+          {date} - ({currency})
         </span>
       )}
 
@@ -36,7 +47,7 @@ const BetCard: React.FC<BetCardProps> = ({
         <Text>{type}</Text>
       ) : (
         <Text style={{ fontSize: 15 }}>
-          {type} <p style={{ fontSize: 15 }}>{price}</p>
+          {type} <p style={{ fontSize: 15 }}>{currency}</p>
         </Text>
       )}
     </Card>

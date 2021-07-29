@@ -1,35 +1,30 @@
 import { usersAction } from '../slices/usersSlice'
-import { authActions } from '../slices/authSlice'
 
 import { AppDispatch } from '../'
 
-interface UsersProps {
-  name: string
-  email: string
-  password: string
-}
+import Cookies from 'universal-cookie'
+import api from '../../services/api'
 
-export function addNewUser(data: UsersProps, users: Array<UsersProps>) {
+export function saveUser() {
   return function (dispatch: AppDispatch) {
-    const existingUser = users.find((elem) => elem.email === data.email)
-    if (!existingUser) {
-      dispatch(usersAction.createNewUser(data))
-      return true
-    } else {
-      return false
-    }
-  }
-}
+    const cookies = new Cookies()
 
-export function updateUser(data: UsersProps, users: Array<UsersProps>) {
-  return function (dispatch: AppDispatch) {
-    const existingUser = users.find((elem) => elem.email === data.email)
-    if (!existingUser) {
-      dispatch(usersAction.updateUser(data))
-      dispatch(authActions.login(data))
-      return true
-    } else {
-      return false
+    const config = {
+      headers: {
+        Authorization: `Bearer ${cookies.get('token')}`,
+      },
     }
+
+    api
+      .get('users', config)
+      .then((response) => {
+        return response.data
+      })
+      .then((data) => {
+        dispatch(usersAction.saveUser(data))
+      })
+      .catch((error) => {
+        console.log(error)
+      })
   }
 }

@@ -1,13 +1,14 @@
 import React, { FormEvent, useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
+import { saveUser } from '../../store/actions/usersActions'
 
 import Header from '../../components/Header'
 import Card from '../../components/Card'
 
 import Swal from 'sweetalert2'
 
-import { updateUser } from '../../store/actions/usersActions'
-import { RootState } from '../../store'
+import Cookies from 'universal-cookie'
+import api from '../../services/api'
 
 import {
   Container,
@@ -18,45 +19,57 @@ import {
 } from '../../assets/styles/global'
 
 import { Main, UserDataText } from './styles'
-
-interface UsersProps {
-  name: string
-  email: string
-  password: string
-}
+import { RootState } from '../../store'
+import { useSelector } from 'react-redux'
 
 const AccountPage: React.FC = () => {
-  const data = useSelector((state: RootState) => state.auth)
-  const users = useSelector((state: RootState) => state.users)
+  const cookies = new Cookies()
   const dispatch = useDispatch()
 
-  let userData
-  useEffect(() => {
-    userData = data.user
-    console.log(data, users)
-  }, [userData])
+  const users = useSelector((state: RootState) => state.users)
 
   const [name, setUsername] = useState('')
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${cookies.get('token')}`,
+    },
+  }
+
+  let userData
+  useEffect(() => {}, [userData])
 
   function submitHandler(event: FormEvent) {
     event.preventDefault()
-    if (email.length === 0 || password.length === 0 || name.length === 0) {
-      Swal.fire('Error', 'Preencha todos os campos', 'error')
-    } else {
-      dispatch(updateUser({ name, email, password }, users))
-      Swal.fire('Dados atualizados')
+
+    const data = {
+      username: !!name ? name : users?.username,
+      email: !!email ? email : users?.email,
     }
+    console.log(data)
+
+    api
+      .put(`users/${users?.id}`, data, config)
+      .then((response) => {
+        return response.data
+      })
+      .then((data) => {
+        console.log(`users/${users?.id}`)
+        dispatch(saveUser())
+        Swal.fire('Dados atualizados')
+      })
+      .catch((error) => {
+        console.log(error)
+      })
   }
 
   return (
     <Container>
       <Header />
       <Main>
-        <UserDataText>Nome: {data.user?.name}</UserDataText>
-        <UserDataText>Email: {data.user?.email}</UserDataText>
-        <UserDataText>Senha: {data.user?.password}</UserDataText>
+        <UserDataText>Nome: {users?.username}</UserDataText>
+        <UserDataText>Email: {users?.email}</UserDataText>
         <Card type="Mudar dados">
           <Fieldset onSubmit={submitHandler}>
             <Input
@@ -70,12 +83,6 @@ const AccountPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="email"
-            />
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="password"
             />
             <SubmitButton>Save &rarr;</SubmitButton>
           </Fieldset>

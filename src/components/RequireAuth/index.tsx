@@ -1,22 +1,22 @@
 import React, { useEffect, ReactNode } from 'react'
 import { useHistory } from 'react-router-dom'
-import { useSelector } from 'react-redux'
 
-import { RootState } from '../../store'
+import Cookies from 'universal-cookie'
 
 interface Props {
   children: ReactNode
 }
 
 const RequireAuth: React.FC<Props> = ({ children }) => {
+  const cookies = new Cookies()
   const history = useHistory()
-  const auth = useSelector((state: RootState) => state.auth)
+  const token = cookies.get('token')
 
   useEffect(() => {
-    if (!auth.isLoggedIn) {
+    if (!!token) {
       history.push('/')
     }
-  }, [auth, history])
+  }, [history, token])
 
   return <>{children}</>
 }

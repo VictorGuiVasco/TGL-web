@@ -15,7 +15,7 @@ import RequireAuth from './components/RequireAuth'
 
 const Routes: React.FC = () => {
   const auth = useSelector((state: RootState) => state.auth)
-  const isLoggedIn = auth.isLoggedIn
+  const isLoggedIn = auth.token
 
   useEffect(() => {}, [isLoggedIn])
   return (

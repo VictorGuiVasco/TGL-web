@@ -8,6 +8,10 @@ import Header from '../../components/Header'
 import BetButton from '../../components/BetButton'
 import BetCard from '../../components/BetCard'
 
+import Cookies from 'universal-cookie'
+
+import api from '../../services/api'
+
 import {
   BetContainer,
   ButtonsContainer,
@@ -20,57 +24,86 @@ import {
 import { Container, Footer } from '../../assets/styles/global'
 
 interface BetsProps {
+  id: number
   type: string
   description: string
   range: number
   price: number
-  'max-number': number
+  max_number: number
   color: string
-  'min-cart-value': number
+  min_cart_value: number
 }
 
 interface GamesProps {
+  game_id: number
   type: string
   numbers: string
-  price: string
+  price: number
   color: string
   date?: string
+  created_at?: string
 }
 
 const HomePage: React.FC = () => {
   const dispatch = useDispatch()
-  const data = useSelector((state: RootState) => state.games)
-  const bets = useSelector((state: RootState) => state.bets)[0]
+  const cookies = new Cookies()
 
+  const bets = useSelector((state: RootState) => state.bets)
+
+  const [data, setData] = useState<GamesProps[]>([])
   const [indexGame, setIndexGame] = useState<number[]>([])
   const [selectedGame, setSelectedGame] = useState<BetsProps[]>([])
   const [filtered, setFiltered] = useState<GamesProps[]>([])
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${cookies.get('token')}`,
+    },
+  }
+
+  useEffect(() => {
+    dispatch(fetchBets())
+    let games: any[] = []
+
+    api
+      .get('bets', config)
+      .then((response) => {
+        return response.data
+      })
+      .then((data) => {
+        for (let value in data.data) {
+          games.push(data.data[value])
+        }
+        setData(games)
+        setFiltered(games)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }, [])
 
   useEffect(() => {
     let tempGames: BetsProps[] = []
     let tempFiltered: GamesProps[] = []
     for (let value of indexGame) {
-      let tempGame: BetsProps = bets?.types[value]
+      let tempGame: BetsProps = bets[value]
       tempGames.push(tempGame)
     }
 
     for (let value of tempGames) {
-      let temp = data.filter((element) => element.type === value.type)
+      let temp = data.filter((element) => element.game_id === value.id - 1)
       for (let elem of temp) {
         tempFiltered.push(elem)
       }
     }
+
     if (tempFiltered.length !== 0) {
       setFiltered(tempFiltered)
     } else {
       setFiltered(data)
     }
     setSelectedGame(tempGames)
-  }, [dispatch, indexGame])
-
-  useEffect(() => {
-    dispatch(fetchBets())
-  }, [])
+  }, [dispatch, indexGame, data])
 
   function changeIndexBet(index: number, type: string) {
     let num = indexGame.slice()
@@ -95,18 +128,18 @@ const HomePage: React.FC = () => {
           <FilterContainer>
             <Text>Filters</Text>
 
-            {bets &&
+            {bets.length > 0 &&
               selectedGame &&
-              bets?.types.map((elem, index) => (
+              bets.map((elem, index) => (
                 <BetButton
                   key={index}
                   backgroundColor={
-                    selectedGame.find((game) => game.type === elem.type)
+                    selectedGame.find((game) => game?.id === elem.id)
                       ? elem.color
                       : '#FFF'
                   }
                   fontColor={
-                    !selectedGame.find((game) => game.type === elem.type)
+                    !selectedGame.find((game) => game?.id === elem.id)
                       ? elem.color
                       : '#FFF'
                   }
@@ -128,15 +161,15 @@ const HomePage: React.FC = () => {
             filtered.map((elem, index) => (
               <BetCard
                 key={index}
-                type={elem.type}
+                type={bets[elem.game_id]?.type}
                 numbers={elem.numbers}
-                date={elem.date}
+                date={elem.created_at}
                 price={elem.price}
-                color={elem.color}
+                color={bets[elem.game_id]?.color}
               />
             ))
           ) : (
-            <p>Nenhum jogo registrado</p>
+            <p>Nenhum game comprado</p>
           )}
         </BetContainer>
       </Main>

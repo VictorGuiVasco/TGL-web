@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { RootState } from '../../store'
-import { gamesActions } from '../../store/slices/gamesSlice'
 
 import Header from '../../components/Header'
 import BetButton from '../../components/BetButton'
@@ -12,6 +11,9 @@ import cartIcon from '../../assets/images/icons/shopping-cart.svg'
 import trashIcon from '../../assets/images/icons/trash.svg'
 
 import Swal from 'sweetalert2'
+
+import Cookies from 'universal-cookie'
+import api from '../../services/api'
 
 import {
   BetContainer,
@@ -36,16 +38,16 @@ import {
 import { Container } from '../../assets/styles/global'
 
 interface GamesProps {
-  type: string
+  game_id: number
   numbers: string
+  price: number
   date?: string
-  price: string
-  color: string
 }
 
 const NewBet: React.FC = () => {
-  const dispatch = useDispatch()
-  const bets = useSelector((state: RootState) => state.bets)[0]
+  const cookies = new Cookies()
+
+  const bets = useSelector((state: RootState) => state.bets)
 
   const [indexGame, setIndexGame] = useState(0)
   const [numberSelected, setNumberSelected] = useState<number[]>([])
@@ -53,7 +55,13 @@ const NewBet: React.FC = () => {
   const [actualPrice, setActualPrice] = useState(0)
   const [localePrice, setLocalePrice] = useState('')
 
-  const selectedGame = bets?.types[indexGame]
+  const selectedGame = bets[indexGame]
+
+  const config = {
+    headers: {
+      Authorization: `Bearer ${cookies.get('token')}`,
+    },
+  }
 
   useEffect(() => {
     const price = actualPrice.toLocaleString('pt-br', {
@@ -81,7 +89,7 @@ const NewBet: React.FC = () => {
       let temp = numberSelected.slice()
       temp.splice(numberSelected.indexOf(num), 1)
       setNumberSelected(temp)
-    } else if (numberSelected.length === selectedGame['max-number']) {
+    } else if (numberSelected.length === selectedGame.max_number) {
       Swal.fire('Cartela cheia')
     } else {
       setNumberSelected([...numberSelected, num])
@@ -90,11 +98,10 @@ const NewBet: React.FC = () => {
 
   function completeGame() {
     let tempNumbers = numberSelected.slice()
-    var numOfEmptySpaces = selectedGame['max-number'] - tempNumbers.length
+    var numOfEmptySpaces = selectedGame.max_number - tempNumbers.length
     if (numOfEmptySpaces === 0) {
-      console.log(numOfEmptySpaces)
       tempNumbers = []
-      numOfEmptySpaces = selectedGame['max-number']
+      numOfEmptySpaces = selectedGame.max_number
     }
     for (var i = 0; i < numOfEmptySpaces; i++) {
       tempNumbers.push(getRandomIntInclusive(selectedGame?.range, tempNumbers))
@@ -107,14 +114,14 @@ const NewBet: React.FC = () => {
   }
 
   function addToCart() {
-    if (numberSelected.length !== selectedGame['max-number']) {
+    if (numberSelected.length !== selectedGame.max_number) {
       let tempNumbers = numberSelected.slice()
-      let numOfEmptySpaces = selectedGame['max-number'] - tempNumbers.length
+      let numOfEmptySpaces = selectedGame.max_number - tempNumbers.length
       let wordLeft = numOfEmptySpaces === 1 ? 'Falta' : 'Faltam'
       let wordNumber = numOfEmptySpaces === 1 ? 'número' : 'números'
       Swal.fire(
         'Preencha a cartela',
-        `${wordLeft} ${numOfEmptySpaces} ${wordNumber}`,
+        `${wordLeft} ${numOfEmptySpaces} ${wordNumber}`
       )
       return
     }
@@ -125,16 +132,10 @@ const NewBet: React.FC = () => {
       return 0
     })
 
-    const price = selectedGame.price.toLocaleString('pt-br', {
-      style: 'currency',
-      currency: 'BRL',
-    })
-
     let temporaryData = {
-      type: selectedGame?.type,
+      game_id: indexGame,
       numbers: numberSelected.join(', '),
-      price,
-      color: selectedGame.color,
+      price: selectedGame.price,
     }
     setNumberSelected([])
     setActualPrice(actualPrice + selectedGame.price)
@@ -145,7 +146,7 @@ const NewBet: React.FC = () => {
     let data = cartData.slice()
     data.splice(index, 1)
 
-    let tempData = bets?.types.find((elem) => elem.type === type)
+    let tempData = bets.find((elem) => elem.type === type)
 
     setActualPrice(actualPrice - (tempData?.price ? tempData?.price : 0))
     setCartData(data)
@@ -159,10 +160,19 @@ const NewBet: React.FC = () => {
       Swal.fire('Compre no minimo R$ 30,00')
       return
     } else {
-      dispatch(gamesActions.addGames(cartData))
-      setCartData([])
-      setActualPrice(0)
-      Swal.fire('Parabéns pela compra')
+      api
+        .post('bets', cartData, config)
+        .then((response) => {
+          return response.data
+        })
+        .then((data) => {
+          setCartData([])
+          setActualPrice(0)
+          Swal.fire('Parabéns pela compra')
+        })
+        .catch((error) => {
+          console.log(error)
+        })
     }
   }
 
@@ -185,14 +195,14 @@ const NewBet: React.FC = () => {
             <p>Choose a game</p>
             {bets &&
               selectedGame &&
-              bets?.types.map((elem, index) => (
+              bets.map((elem, index) => (
                 <BetButton
                   key={index}
                   backgroundColor={
-                    elem.type === selectedGame.type ? elem.color : '#FFF'
+                    elem.id === selectedGame.id ? bets[index]?.color : '#FFF'
                   }
                   fontColor={
-                    !(elem.type === selectedGame.type) ? elem.color : '#FFF'
+                    !(elem.id === selectedGame.id) ? bets[index]?.color : '#FFF'
                   }
                   borderColor={elem.color}
                   onClick={() => {
@@ -245,16 +255,16 @@ const NewBet: React.FC = () => {
                 <BetContainer key={index}>
                   <TrashButton
                     onClick={() => {
-                      deleteGame(index, elem.type)
+                      deleteGame(index, bets[elem.game_id]?.type)
                     }}
                   >
                     <img src={trashIcon} alt="deletar" />
                   </TrashButton>
                   <BetCard
-                    type={elem.type}
+                    type={bets[elem.game_id]?.type}
                     numbers={elem.numbers}
                     price={elem.price}
-                    color={elem.color}
+                    color={bets[elem.game_id]?.color}
                   />
                 </BetContainer>
               ))}

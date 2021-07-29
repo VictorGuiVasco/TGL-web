@@ -1,30 +1,23 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 interface UsersProps {
-  name: string
+  id: number
+  username: string
   email: string
-  password: string
 }
 
-const initialState: Array<UsersProps> = []
+const initialState: UsersProps = { id: 0, username: '', email: '' }
 
 const usersSlice = createSlice({
   name: 'users',
   initialState,
   reducers: {
-    createNewUser(state, action: PayloadAction<UsersProps>) {
-      state.push(action.payload)
+    saveUser(state, action: PayloadAction<UsersProps>) {
+      state.id = action.payload.id
+      state.username = action.payload.username
+      state.email = action.payload.email
     },
-    updateUser(state, action: PayloadAction<UsersProps>) {
-      for (var i in state) {
-        if (state[i].email === action.payload.email) {
-          state[i].name = action.payload.name
-          state[i].email = action.payload.email
-          state[i].password = action.payload.password
-          break
-        }
-      }
-    },
+    updateUser(state, action: PayloadAction<UsersProps>) {},
   },
 })
 

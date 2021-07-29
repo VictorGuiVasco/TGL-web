@@ -1,14 +1,12 @@
 import React, { FormEvent, useState } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
 import { useHistory } from 'react-router'
-
-import { RootState } from '../../store'
-import { addNewUser } from '../../store/actions/usersActions'
 
 import Card from '../../components/Card'
 import LandingTitles from '../../components/LandingTitles'
 
 import Swal from 'sweetalert2'
+
+import api from '../../services/api'
 
 import {
   Button,
@@ -22,32 +20,39 @@ import {
 } from '../../assets/styles/global'
 
 const RegistrationPage: React.FC = () => {
-  const dispatch = useDispatch()
   const history = useHistory()
 
-  const users = useSelector((state: RootState) => state.users)
-
-  const [name, setUsername] = useState('')
+  const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
 
   function submitHandler(event: FormEvent) {
     event.preventDefault()
 
-    if (email.length === 0 || password.length === 0 || name.length === 0) {
+    if (email.length === 0 || password.length === 0 || username.length === 0) {
       Swal.fire('Error', 'Preencha todos os campos', 'error')
-    } else if (dispatch(addNewUser({ name, email, password }, users))) {
-      Swal.fire({
-        icon: 'success',
-        title: 'Usuário cadastrado com sucesso',
-        showConfirmButton: false,
-        timer: 1500,
-      }).then(() => {
-        history.push('/')
-      })
-    } else {
-      Swal.fire('Error', 'Usuário já existe', 'error')
+      return
     }
+
+    api
+      .post('users', {
+        username,
+        email,
+        password,
+      })
+      .then(() => {
+        Swal.fire({
+          icon: 'success',
+          title: 'Cadastro realizado com sucesso',
+          showConfirmButton: false,
+          timer: 1500,
+        }).then(() => {
+          history.push('/')
+        })
+      })
+      .catch(() => {
+        Swal.fire('Error', 'Usuário ja existe', 'error')
+      })
   }
 
   return (
@@ -58,10 +63,10 @@ const RegistrationPage: React.FC = () => {
           <Card type="Registration">
             <Fieldset onSubmit={submitHandler}>
               <Input
-                type="name"
-                value={name}
+                type="username"
+                value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="name"
+                placeholder="username"
               />
               <Input
                 type="email"
