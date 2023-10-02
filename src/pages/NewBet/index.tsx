@@ -15,26 +15,7 @@ import Swal from 'sweetalert2'
 import Cookies from 'universal-cookie'
 import api from '../../services/api'
 
-import {
-  BetContainer,
-  BetNameText,
-  BetOptions,
-  Button,
-  ButtonContainer,
-  Card,
-  CartButton,
-  CartContainer,
-  Main,
-  NumberButton,
-  PriceContainer,
-  RulesContainer,
-  SaveButton,
-  Scroll,
-  Text,
-  TitleContainer,
-  TotalPrice,
-  TrashButton,
-} from './styles'
+import * as S from './styles'
 import { Container } from '../../assets/styles/global'
 
 interface GamesProps {
@@ -72,7 +53,7 @@ const NewBet: React.FC = () => {
   }, [actualPrice])
 
   function getRandomIntInclusive(max: number, arr: number[]) {
-    var num = Math.ceil(Math.random() * max)
+    let num = Math.ceil(Math.random() * max)
     while (arr.indexOf(num) >= 0) {
       num = Math.ceil(Math.random() * max)
     }
@@ -98,12 +79,12 @@ const NewBet: React.FC = () => {
 
   function completeGame() {
     let tempNumbers = numberSelected.slice()
-    var numOfEmptySpaces = selectedGame.max_number - tempNumbers.length
+    let numOfEmptySpaces = selectedGame.max_number - tempNumbers.length
     if (numOfEmptySpaces === 0) {
       tempNumbers = []
       numOfEmptySpaces = selectedGame.max_number
     }
-    for (var i = 0; i < numOfEmptySpaces; i++) {
+    for (let i = 0; i < numOfEmptySpaces; i++) {
       tempNumbers.push(getRandomIntInclusive(selectedGame?.range, tempNumbers))
     }
     setNumberSelected(tempNumbers)
@@ -152,7 +133,7 @@ const NewBet: React.FC = () => {
     setCartData(data)
   }
 
-  function saveGame() {
+  async function saveGame() {
     if (actualPrice === 0) {
       Swal.fire('Preencha o cart')
       return
@@ -160,19 +141,15 @@ const NewBet: React.FC = () => {
       Swal.fire('Compre no minimo R$ 30,00')
       return
     } else {
-      api
-        .post('bets', cartData, config)
-        .then((response) => {
-          return response.data
-        })
-        .then((data) => {
-          setCartData([])
-          setActualPrice(0)
-          Swal.fire('Parabéns pela compra')
-        })
-        .catch((error) => {
-          console.log(error)
-        })
+      try {
+        await api.post('bets', cartData, config)
+
+        setCartData([])
+        setActualPrice(0)
+        Swal.fire('Parabéns pela compra')
+      } catch (e) {
+        Swal.fire('Erro na compra')
+      }
     }
   }
 
@@ -184,14 +161,14 @@ const NewBet: React.FC = () => {
   return (
     <Container>
       <Header />
-      <Main>
+      <S.Main>
         <section>
-          <TitleContainer>
-            <Text>NEW BET</Text>
-            <BetNameText>FOR {selectedGame?.type}</BetNameText>
-          </TitleContainer>
+          <S.TitleContainer>
+            <S.Text>NEW BET</S.Text>
+            <S.BetNameText>FOR {selectedGame?.type}</S.BetNameText>
+          </S.TitleContainer>
 
-          <BetOptions>
+          <S.BetOptions>
             <p>Choose a game</p>
             {bets &&
               selectedGame &&
@@ -212,16 +189,16 @@ const NewBet: React.FC = () => {
                   {elem.type}
                 </BetButton>
               ))}
-          </BetOptions>
+          </S.BetOptions>
 
-          <RulesContainer>
+          <S.RulesContainer>
             <h1>Fill your bet</h1>
             <p>{selectedGame?.description}</p>
-          </RulesContainer>
+          </S.RulesContainer>
 
-          <Card>
+          <S.Card>
             {range.map((elem) => (
-              <NumberButton
+              <S.NumberButton
                 color={
                   numberSelected.some((num) => num === elem)
                     ? selectedGame.color
@@ -233,54 +210,54 @@ const NewBet: React.FC = () => {
                 key={elem}
               >
                 {elem}
-              </NumberButton>
+              </S.NumberButton>
             ))}
-          </Card>
+          </S.Card>
 
-          <ButtonContainer>
-            <Button onClick={completeGame}>Complete Game</Button>
-            <Button onClick={clearGame}>Clear Game</Button>
-            <CartButton onClick={addToCart}>
+          <S.ButtonContainer>
+            <S.Button onClick={completeGame}>Complete Game</S.Button>
+            <S.Button onClick={clearGame}>Clear Game</S.Button>
+            <S.CartButton onClick={addToCart}>
               <img src={cartIcon} alt="cart" />
               Add to cart
-            </CartButton>
-          </ButtonContainer>
+            </S.CartButton>
+          </S.ButtonContainer>
         </section>
         <section>
-          <CartContainer>
+          <S.CartContainer>
             <h1>CART</h1>
 
-            <Scroll>
+            <S.Scroll>
               {cartData.map((elem, index) => (
-                <BetContainer key={index}>
-                  <TrashButton
+                <S.BetContainer key={index}>
+                  <S.TrashButton
                     onClick={() => {
                       deleteGame(index, bets[elem.game_id]?.type)
                     }}
                   >
                     <img src={trashIcon} alt="deletar" />
-                  </TrashButton>
+                  </S.TrashButton>
                   <BetCard
                     type={bets[elem.game_id]?.type}
                     numbers={elem.numbers}
                     price={elem.price}
                     color={bets[elem.game_id]?.color}
                   />
-                </BetContainer>
+                </S.BetContainer>
               ))}
-            </Scroll>
+            </S.Scroll>
 
-            <PriceContainer>
+            <S.PriceContainer>
               {actualPrice !== 0 ? <h1>CART</h1> : <h1>ADICIONE ITENS</h1>}
               {actualPrice !== 0 && (
-                <TotalPrice>TOTAL: {localePrice}</TotalPrice>
+                <S.TotalPrice>TOTAL: {localePrice}</S.TotalPrice>
               )}
-            </PriceContainer>
+            </S.PriceContainer>
 
-            <SaveButton onClick={saveGame}>Save &rarr;</SaveButton>
-          </CartContainer>
+            <S.SaveButton onClick={saveGame}>Save &rarr;</S.SaveButton>
+          </S.CartContainer>
         </section>
-      </Main>
+      </S.Main>
     </Container>
   )
 }

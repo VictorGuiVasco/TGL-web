@@ -14,20 +14,20 @@ import AccountPage from './pages/AccountPage'
 import RequireAuth from './components/RequireAuth'
 
 const Routes: React.FC = () => {
-  const auth = useSelector((state: RootState) => state.auth)
-  const isLoggedIn = auth.token
+  // const auth = useSelector((state: RootState) => state.auth)
+  // const isLoggedIn = auth.token
 
-  useEffect(() => {}, [isLoggedIn])
+  // useEffect(() => {}, [isLoggedIn])
   return (
     <BrowserRouter>
       <Route path="/" exact component={Landing} />
       <Route path="/registration" component={RegistrationPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
-      <RequireAuth>
-        <Route path="/app" component={HomePage} />
-        <Route path="/new-bet" component={NewBet} />
-        <Route path="/account" component={AccountPage} />
-      </RequireAuth>
+      {/* <RequireAuth> */}
+      <Route path="/app" component={HomePage} />
+      <Route path="/new-bet" component={NewBet} />
+      <Route path="/account" component={AccountPage} />
+      {/* </RequireAuth> */}
     </BrowserRouter>
   )
 }
